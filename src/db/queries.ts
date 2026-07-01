@@ -2,12 +2,13 @@ import { and, eq, gte, lt, desc } from "drizzle-orm";
 import type { DbClient } from "./client";
 import * as schema from "./schema";
 
-// Users
+// ============ USERS ============
+
 export async function getOrCreateUser(
   db: DbClient,
   telegramId: number,
-  name?: string,
-  username?: string
+  name: string,
+  username: string
 ) {
   const existing = await db.select().from(schema.users).where(eq(schema.users.telegramId, String(telegramId))).get();
 
@@ -56,7 +57,8 @@ export async function unbanUser(db: DbClient, telegramId: number) {
   await db.update(schema.users).set({ banned: false }).where(eq(schema.users.telegramId, String(telegramId)));
 }
 
-// Subscriptions
+// ============ SUBSCRIPTIONS ============
+
 export async function getActiveSubscription(db: DbClient, telegramId: number) {
   const now = Date.now();
   return db.select()
@@ -86,32 +88,47 @@ export async function createSubscription(
 ) {
   await db.insert(schema.subscriptions).values({
     telegramId: String(telegramId),
-    tariff,
-    expiresAt,
-    key,
+    tariff: tariff,
+    expiresAt: expiresAt,
+    key: key,
     reminderSent: false,
     updatedAt: Date.now(),
   });
 }
 
-export async function updateSubscription(db: DbClient, telegramId: number, data: any) {
+export async function updateSubscription(
+  db: DbClient,
+  telegramId: number,
+  data: {
+    tariff?: string;
+    expiresAt?: number;
+    key?: string;
+    reminderSent?: boolean;
+  }
+) {
   await db.update(schema.subscriptions)
-    .set({ ...data, updatedAt: Date.now() })
+    .set({ 
+      ...data, 
+      updatedAt: Date.now() 
+    })
     .where(eq(schema.subscriptions.telegramId, String(telegramId)));
 }
 
-// Keys
+// ============ FREE KEYS ============
+
 export async function getFreeKey(db: DbClient) {
   return db.select().from(schema.freeKeys).get();
 }
 
 export async function addFreeKey(db: DbClient, key: string) {
-  await db.insert(schema.freeKeys).values({ key, createdAt: Date.now() });
+  await db.insert(schema.freeKeys).values({ key: key, createdAt: Date.now() });
 }
 
 export async function deleteFreeKey(db: DbClient, key: string) {
   await db.delete(schema.freeKeys).where(eq(schema.freeKeys.key, key));
 }
+
+// ============ PREMIUM KEYS ============
 
 export async function getAvailablePremiumKey(db: DbClient) {
   return db.select()
@@ -122,7 +139,7 @@ export async function getAvailablePremiumKey(db: DbClient) {
 
 export async function addPremiumKey(db: DbClient, key: string) {
   await db.insert(schema.premiumKeys).values({
-    key,
+    key: key,
     createdAt: Date.now(),
     isUsed: false,
   });
@@ -138,7 +155,8 @@ export async function usePremiumKey(db: DbClient, key: string, telegramId: numbe
     .where(eq(schema.premiumKeys.key, key));
 }
 
-// Referrals
+// ============ REFERRALS ============
+
 export async function addReferral(db: DbClient, userId: number, inviterId: number) {
   await db.insert(schema.referrals).values({
     userId: String(userId),
@@ -177,7 +195,8 @@ export async function getReferrals(db: DbClient, telegramId: number) {
     .where(eq(schema.referrals.inviterId, String(telegramId)));
 }
 
-// Support
+// ============ SUPPORT CHATS ============
+
 export async function getSupportChat(db: DbClient, telegramId: number) {
   return db.select()
     .from(schema.supportChats)
@@ -185,7 +204,11 @@ export async function getSupportChat(db: DbClient, telegramId: number) {
     .get();
 }
 
-export async function createOrUpdateSupportChat(db: DbClient, telegramId: number, messages: any[]) {
+export async function createOrUpdateSupportChat(
+  db: DbClient,
+  telegramId: number,
+  messages: Array<{ from: string; text: string; time: number }>
+) {
   const existing = await getSupportChat(db, telegramId);
 
   if (existing) {
@@ -218,7 +241,8 @@ export async function getAllOpenSupportChats(db: DbClient) {
     .where(eq(schema.supportChats.closed, false));
 }
 
-// Settings
+// ============ SETTINGS ============
+
 export async function getSetting(db: DbClient, key: string) {
   const result = await db.select()
     .from(schema.settings)
@@ -235,9 +259,9 @@ export async function setSetting(db: DbClient, key: string, value: string) {
 
   if (existing) {
     await db.update(schema.settings)
-      .set({ value, updatedAt: Date.now() })
+      .set({ value: value, updatedAt: Date.now() })
       .where(eq(schema.settings.key, key));
   } else {
-    await db.insert(schema.settings).values({ key, value, updatedAt: Date.now() });
+    await db.insert(schema.settings).values({ key: key, value: value, updatedAt: Date.now() });
   }
 }
