@@ -7,3 +7,6 @@ compatibility_flags = ["nodejs_compat"]
 binding = "DB"
 database_name = "vpn-bot-db"
 database_id = "fad0b2ee-46d1-491f-b85a-09c48f930fad"
+
+[vars]
+# Несекретные переменные
