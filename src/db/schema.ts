@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
 
 export const users = sqliteTable("users", {
   telegramId: text("telegram_id").primaryKey(),
@@ -19,7 +19,9 @@ export const subscriptions = sqliteTable("subscriptions", {
   key: text("key").notNull().default(""),
   reminderSent: integer("reminder_sent", { mode: "boolean" }).notNull().default(false),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
-});
+}, (table) => ({
+  telegramIdIdx: index("telegram_id_idx").on(table.telegramId),
+}));
 
 export const freeKeys = sqliteTable("free_keys", {
   id: integer("id").primaryKey({ autoIncrement: true }),
