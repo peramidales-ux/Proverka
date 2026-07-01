@@ -1,4 +1,4 @@
-import { and, eq, gte, lt, desc } from "drizzle-orm";
+import { and, eq, gte } from "drizzle-orm";
 import type { DbClient } from "./client";
 import * as schema from "./schema";
 
@@ -13,12 +13,6 @@ export async function getOrCreateUser(
   const existing = await db.select().from(schema.users).where(eq(schema.users.telegramId, String(telegramId))).get();
 
   if (existing) {
-    if (name && existing.name !== name) {
-      await db.update(schema.users).set({ name }).where(eq(schema.users.telegramId, String(telegramId)));
-    }
-    if (username && existing.username !== username) {
-      await db.update(schema.users).set({ username }).where(eq(schema.users.telegramId, String(telegramId)));
-    }
     return existing;
   }
 
@@ -99,16 +93,15 @@ export async function createSubscription(
 export async function updateSubscription(
   db: DbClient,
   telegramId: number,
-  data: {
-    tariff?: string;
-    expiresAt?: number;
-    key?: string;
-    reminderSent?: boolean;
-  }
+  tariff: string,
+  expiresAt: number,
+  key: string
 ) {
   await db.update(schema.subscriptions)
     .set({ 
-      ...data, 
+      tariff: tariff,
+      expiresAt: expiresAt,
+      key: key,
       updatedAt: Date.now() 
     })
     .where(eq(schema.subscriptions.telegramId, String(telegramId)));
