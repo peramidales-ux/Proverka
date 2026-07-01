@@ -1,3 +1,18 @@
+// В начале файла adminBot.ts добавляем функцию adminMenuKeyboard
+function adminMenuKeyboard() {
+  return new InlineKeyboard()
+    .row(
+      InlineKeyboard.text("📊 Статистика", "admin_stats"),
+      InlineKeyboard.text("👥 Пользователи", "admin_users")
+    )
+    .row(
+      InlineKeyboard.text("🔑 Ключи", "admin_keys"),
+      InlineKeyboard.text("📢 Рассылка", "admin_broadcast")
+    )
+    .row(
+      InlineKeyboard.text("💬 Поддержка", "admin_support")
+    );
+}
 import { Bot, InlineKeyboard, webhookCallback } from "grammy";
 import type { DbClient } from "../db/client";
 import * as db from "../db/queries";
